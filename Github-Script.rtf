@@ -1,0 +1,36 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2761
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 #!/bin/bash\
+\
+S3_URI=s3://simba-sql-files/V1__shopwise.sql\
+RDS_ENDPOINT=dev-rdb-db.cbkei0ek6xig.us-east-2.rds.amazonaws.com\
+RDS_DB_NAME=applicationdb\
+RDS_DB_USERNAME=will\
+RDS_DB_PASSWORD=Kobeisgoat24\
+\
+# Update all packages\
+sudo yum update -y\
+\
+# Download and extract Flyway\
+sudo wget -qO- https://download.red-gate.com/maven/release/com/redgate/flyway/flyway-commandline/10.17.0/flyway-commandline-10.17.0-linux-x64.tar.gz | tar -xvz \
+\
+# Create a symbolic link to make Flyway accessible globally\
+sudo ln -s `pwd`/flyway-10.17.0/flyway /usr/local/bin\
+\
+# Create the SQL directory for migrations\
+sudo mkdir sql\
+\
+# Download the migration SQL script from AWS S3\
+sudo aws s3 cp "$S3_URI" sql/\
+\
+# Run Flyway migration\
+flyway -url=jdbc:mysql://"$RDS_ENDPOINT":3306/"$RDS_DB_NAME" \\\
+  -user="$RDS_DB_USERNAME" \\\
+  -password="$RDS_DB_PASSWORD" \\\
+  -locations=filesystem:sql \\\
+  migrate}
